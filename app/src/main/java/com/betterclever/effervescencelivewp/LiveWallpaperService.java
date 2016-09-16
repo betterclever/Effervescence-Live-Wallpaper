@@ -19,6 +19,8 @@ import android.util.Log;
 import android.view.SurfaceHolder;
 
 import java.util.Calendar;
+import java.util.Date;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by better_clever on 14/9/16.
@@ -35,6 +37,7 @@ public class LiveWallpaperService extends WallpaperService {
         private float xOffset = 0.5f, yOffset = 0.5f;
         private Bitmap lastBackground = null, lastBackgroundScaled = null;
         private int lastHour = -1, lastWidth = -1, lastHeight = -1;
+		private long daysLeft = 0;
         private final Runnable drawRunner =
                 new Runnable() {
                     @Override
@@ -53,20 +56,32 @@ public class LiveWallpaperService extends WallpaperService {
                 IntentFilter filter = new IntentFilter(Intent.ACTION_TIME_TICK);
                 filter.matchAction(Intent.ACTION_TIME_CHANGED);
                 filter.matchAction(Intent.ACTION_TIMEZONE_CHANGED);
+				filter.matchAction(Intent.ACTION_DATE_CHANGED);
 
                 receiver = new BroadcastReceiver() {
 
                     private int lastHour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY);
+					private Date curdate = Calendar.getInstance().getTime();
+					private Date effeDate = new Date(2016,10,15);
+					long diff = curdate.getTime() - effeDate.getTime();
+
+					long daysLeft = TimeUnit.DAYS.convert(diff,TimeUnit.MILLISECONDS);
 
                     @Override
                     public void onReceive(Context context, Intent intent) {
                         int currentHour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY);
+						Date curdate = Calendar.getInstance().getTime();
+						Date effeDate = new Date(2016,10,15);
+						long diff = curdate.getTime() - effeDate.getTime();
+						long newDaysLeft = TimeUnit.DAYS.convert(diff,TimeUnit.MILLISECONDS);
 
-                        if (lastHour != currentHour) {
+
+                        if (lastHour != currentHour || daysLeft != newDaysLeft) {
                             draw();
                         }
 
                         lastHour = currentHour;
+						daysLeft = newDaysLeft;
                     }
                 };
 
@@ -148,6 +163,7 @@ public class LiveWallpaperService extends WallpaperService {
 			int currentHeight = (int) currentHeightF;
 			int currentHour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY);
 
+
 			//Log.d("curHeight", String.valueOf(currentHeight));
 
             if (lastHour != currentHour) {
@@ -194,8 +210,15 @@ public class LiveWallpaperService extends WallpaperService {
             Paint paint = new Paint();
             paint.setFilterBitmap(true);
 
-			Bitmap bitmap1 = drawTextToBitmap(getApplicationContext(),bitmap,"30 days to go",getColor(R.color.md_white_1000),12,12,45);
-            canvas.drawBitmap(bitmap1, transformation, paint);
+			Date curdate = Calendar.getInstance().getTime();
+			Date effeDate = new Date(116,9,15);
+			Log.d("tem ke h bhai", "" + curdate.toString());
+			Log.d("effe kab h",effeDate.toString());
+			long diff = effeDate.getTime() - curdate.getTime();
+			long newDaysLeft = TimeUnit.DAYS.convert(diff,TimeUnit.MILLISECONDS);
+
+			Bitmap bitmap1 = drawTextToBitmap(getApplicationContext(), bitmap,  newDaysLeft+" days to go", getColor(R.color.md_white_1000), 12, 12, 45);
+			canvas.drawBitmap(bitmap1, transformation, paint);
 
             return scaledImage;
         }

@@ -14,6 +14,7 @@ import android.graphics.Paint;
 import android.os.Handler;
 import android.service.wallpaper.WallpaperService;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.SurfaceHolder;
 
 import java.util.Calendar;
@@ -40,11 +41,13 @@ public class LiveWallpaperService extends WallpaperService {
                         draw();
                     }
                 };
+		//private int desiredHeight ;
 
         @Override
         public void onVisibilityChanged(boolean visible) {
 
             if (visible) {
+
                 handler.post(drawRunner);
                 IntentFilter filter = new IntentFilter(Intent.ACTION_TIME_TICK);
                 filter.matchAction(Intent.ACTION_TIME_CHANGED);
@@ -117,6 +120,7 @@ public class LiveWallpaperService extends WallpaperService {
                         y = (metrics.heightPixels - background.getHeight()) * yOffset;
 
                 canvas.drawBitmap(background, x, y, null);
+
             } finally {
                 if (canvas != null) holder.unlockCanvasAndPost(canvas);
             }
@@ -126,22 +130,24 @@ public class LiveWallpaperService extends WallpaperService {
 
         private int getBackgroundForHour(int hour) {
             if (hour >= 21 || hour <= 4)
-                return R.drawable.night;
-            else if (hour >= 14)
-                return R.drawable.evening;
+                return R.drawable.night2ef;
+            else if (hour >= 16)
+                return R.drawable.evening2ef;
             else if (hour >= 9)
-                return R.drawable.noon;
+                return R.drawable.noon2ef;
             else
-                return R.drawable.morning;
+                return R.drawable.morning2ef;
         }
 
         public Bitmap getBackground(Resources resources) {
             DisplayMetrics metrics = resources.getDisplayMetrics();
 
-            int
-                    currentWidth = metrics.widthPixels,
-                    currentHeight = metrics.heightPixels,
-                    currentHour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY);
+            int currentWidth = metrics.widthPixels;
+			float currentHeightF = (float) (1.2*metrics.heightPixels);
+			int currentHeight = (int) currentHeightF;
+			int currentHour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY);
+
+			//Log.d("curHeight", String.valueOf(currentHeight));
 
             if (lastHour != currentHour) {
                 int id = getBackgroundForHour(currentHour);

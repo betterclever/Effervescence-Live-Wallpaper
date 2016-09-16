@@ -11,6 +11,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
+import android.graphics.Rect;
 import android.os.Handler;
 import android.service.wallpaper.WallpaperService;
 import android.util.DisplayMetrics;
@@ -193,10 +194,44 @@ public class LiveWallpaperService extends WallpaperService {
             Paint paint = new Paint();
             paint.setFilterBitmap(true);
 
-            canvas.drawBitmap(bitmap, transformation, paint);
+			Bitmap bitmap1 = drawTextToBitmap(getApplicationContext(),bitmap,"30 days to go",getColor(R.color.md_white_1000),12,12,45);
+            canvas.drawBitmap(bitmap1, transformation, paint);
 
             return scaledImage;
         }
+
+		public Bitmap drawTextToBitmap(Context gContext, Bitmap bitmap, String gText , int color, int corX, int corY, int angle) {
+			Resources resources = gContext.getResources();
+			float scale = resources.getDisplayMetrics().density;
+
+			android.graphics.Bitmap.Config bitmapConfig =
+				bitmap.getConfig();
+			// set default bitmap config if none
+			if(bitmapConfig == null) {
+				bitmapConfig = android.graphics.Bitmap.Config.ARGB_8888;
+			}
+			// resource bitmaps are imutable,
+			// so we need to convert it to mutable one
+			bitmap = bitmap.copy(bitmapConfig, true);
+
+			Canvas canvas = new Canvas(bitmap);
+			// new antialised Paint
+			Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
+			// text color - #3D3D3D
+			paint.setColor(color);
+			// text size in pixels
+			paint.setTextSize((int) (120 * scale));
+
+			// draw text to the Canvas center
+			Rect bounds = new Rect();
+			paint.getTextBounds(gText, 0, gText.length(), bounds);
+			int x = (bitmap.getWidth() - bounds.width())/2;
+			int y = (bitmap.getHeight() + bounds.height())/4;
+
+			canvas.drawText(gText, x, y, paint);
+
+			return bitmap;
+		}
     }
 
 

@@ -12,6 +12,7 @@ import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Rect;
+import android.graphics.Typeface;
 import android.os.Handler;
 import android.service.wallpaper.WallpaperService;
 import android.util.DisplayMetrics;
@@ -23,239 +24,288 @@ import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Created by better_clever on 14/9/16.
+ * Created by better_clever on 14/9/16. Powered by AppIC
  */
 public class LiveWallpaperService extends WallpaperService {
-    @Override
-    public Engine onCreateEngine() {
-        return new betterCleverFueledLiveEngine();
-    }
+	@Override
+	public Engine onCreateEngine() {
+		return new betterCleverFueledLiveEngine();
+	}
 
-    private class betterCleverFueledLiveEngine extends Engine {
-        private final Handler handler = new Handler();
-        private BroadcastReceiver receiver = null;
-        private float xOffset = 0.5f, yOffset = 0.5f;
-        private Bitmap lastBackground = null, lastBackgroundScaled = null;
-        private int lastHour = -1, lastWidth = -1, lastHeight = -1;
+	private class betterCleverFueledLiveEngine extends Engine {
+
+		private final int NIGHT_STATE = 0;
+		private final int MORNING_STATE = 1;
+		private final int NOON_STATE = 2;
+		private final int EVENING_STATE = 3;
+
+
+		private final Handler handler = new Handler();
+		private BroadcastReceiver receiver = null;
+		private float xOffset = 0.5f, yOffset = 0.5f;
+		private Bitmap lastBackground = null, lastBackgroundScaled = null;
+		private int lastHour = -1, lastWidth = -1, lastHeight = -1;
 		private long daysLeft = 0;
-        private final Runnable drawRunner =
-                new Runnable() {
-                    @Override
-                    public void run() {
-                        draw();
-                    }
-                };
+		int timeState = 0;
+		private final Runnable drawRunner =
+			new Runnable() {
+				@Override
+				public void run() {
+					draw();
+				}
+			};
 		//private int desiredHeight ;
 
-        @Override
-        public void onVisibilityChanged(boolean visible) {
+		@Override
+		public void onVisibilityChanged(boolean visible) {
 
-            if (visible) {
+			if (visible) {
 
-                handler.post(drawRunner);
-                IntentFilter filter = new IntentFilter(Intent.ACTION_TIME_TICK);
-                filter.matchAction(Intent.ACTION_TIME_CHANGED);
-                filter.matchAction(Intent.ACTION_TIMEZONE_CHANGED);
+				handler.post(drawRunner);
+				IntentFilter filter = new IntentFilter(Intent.ACTION_TIME_TICK);
+				filter.matchAction(Intent.ACTION_TIME_CHANGED);
+				filter.matchAction(Intent.ACTION_TIMEZONE_CHANGED);
 				filter.matchAction(Intent.ACTION_DATE_CHANGED);
 
-                receiver = new BroadcastReceiver() {
+				receiver = new BroadcastReceiver() {
 
-                    private int lastHour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY);
+					private int lastHour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY);
 					private Date curdate = Calendar.getInstance().getTime();
-					private Date effeDate = new Date(2016,10,15);
+					private Date effeDate = new Date(116, 9, 15);
 					long diff = curdate.getTime() - effeDate.getTime();
 
-					long daysLeft = TimeUnit.DAYS.convert(diff,TimeUnit.MILLISECONDS);
+					private long daysLeft = TimeUnit.DAYS.convert(diff, TimeUnit.MILLISECONDS);
 
-                    @Override
-                    public void onReceive(Context context, Intent intent) {
-                        int currentHour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY);
-						Date curdate = Calendar.getInstance().getTime();
-						Date effeDate = new Date(2016,10,15);
+					@Override
+					public void onReceive(Context context, Intent intent) {
+						int currentHour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY);
+						curdate = Calendar.getInstance().getTime();
+						effeDate = new Date(116, 9, 15);
 						long diff = curdate.getTime() - effeDate.getTime();
-						long newDaysLeft = TimeUnit.DAYS.convert(diff,TimeUnit.MILLISECONDS);
+						long newDaysLeft = TimeUnit.DAYS.convert(diff, TimeUnit.MILLISECONDS);
 
+						if (lastHour != currentHour || daysLeft != newDaysLeft) {
+							draw();
+						}
 
-                        if (lastHour != currentHour || daysLeft != newDaysLeft) {
-                            draw();
-                        }
-
-                        lastHour = currentHour;
+						lastHour = currentHour;
 						daysLeft = newDaysLeft;
-                    }
-                };
+					}
+				};
 
-                registerReceiver(receiver, filter);
-            } else {
-                killResources();
-            }
-        }
+				registerReceiver(receiver, filter);
+			} else {
+				killResources();
+			}
+		}
 
-        @Override
-        public void onSurfaceDestroyed(SurfaceHolder holder) {
-            super.onSurfaceDestroyed(holder);
-            killResources();
-        }
+		@Override
+		public void onSurfaceDestroyed(SurfaceHolder holder) {
+			super.onSurfaceDestroyed(holder);
+			killResources();
+		}
 
-        @Override
-        public void onOffsetsChanged(float xOffset, float yOffset, float xStep, float yStep, int xPixels, int yPixels) {
-            this.xOffset = xOffset;
-            this.yOffset = yOffset;
-            draw();
-        }
+		@Override
+		public void onOffsetsChanged(float xOffset, float yOffset, float xStep, float yStep, int xPixels, int yPixels) {
+			this.xOffset = xOffset;
+			this.yOffset = yOffset;
+			draw();
+		}
 
-        private void killResources() {
-            handler.removeCallbacks(drawRunner);
-            if (receiver != null) {
-                unregisterReceiver(receiver);
-                receiver = null;
-            }
-        }
+		private void killResources() {
+			handler.removeCallbacks(drawRunner);
+			if (receiver != null) {
+				unregisterReceiver(receiver);
+				receiver = null;
+			}
+		}
 
-        public void draw() {
+		public void draw() {
 
-            if (isPreview()) {
-                xOffset = yOffset = 0.5f;
-            }
+			if (isPreview()) {
+				xOffset = yOffset = 0.5f;
+			}
 
-            final SurfaceHolder holder = getSurfaceHolder();
+			final SurfaceHolder holder = getSurfaceHolder();
 
-            Canvas canvas = null;
+			Canvas canvas = null;
 
-            try {
-                canvas = holder.lockCanvas();
+			try {
+				canvas = holder.lockCanvas();
 
-                canvas.drawColor(Color.BLACK);
+				canvas.drawColor(Color.BLACK);
 
-                Resources resources = getResources();
-                DisplayMetrics metrics = resources.getDisplayMetrics();
-                Bitmap background = getBackground(resources);
+				Resources resources = getResources();
+				DisplayMetrics metrics = resources.getDisplayMetrics();
+				Bitmap background = getBackground(resources);
 
-                float
-                        x = (metrics.widthPixels - background.getWidth()) * xOffset,
-                        y = (metrics.heightPixels - background.getHeight()) * yOffset;
+				float
+					x = (metrics.widthPixels - background.getWidth()) * xOffset,
+					y = (metrics.heightPixels - background.getHeight()) * yOffset;
 
-                canvas.drawBitmap(background, x, y, null);
+				canvas.drawBitmap(background, x, y, null);
 
-            } finally {
-                if (canvas != null) holder.unlockCanvasAndPost(canvas);
-            }
+			} finally {
+				if (canvas != null) holder.unlockCanvasAndPost(canvas);
+			}
 
-            handler.removeCallbacks(drawRunner);
-        }
+			handler.removeCallbacks(drawRunner);
+		}
 
-        private int getBackgroundForHour(int hour) {
-            if (hour >= 21 || hour <= 4)
-                return R.drawable.night2ef;
-            else if (hour >= 16)
-                return R.drawable.evening2ef;
-            else if (hour >= 9)
-                return R.drawable.noon2ef;
-            else
-                return R.drawable.morning2ef;
-        }
+		private int getBackgroundForHour(int hour) {
+			if (hour >= 21 || hour <= 4) {
+				timeState = NIGHT_STATE;
+				return R.drawable.night2ef;
+			} else if (hour >= 16) {
+				timeState = EVENING_STATE;
+				return R.drawable.evening2ef;
+			} else if (hour >= 9) {
+				timeState = NOON_STATE;
+				return R.drawable.noon2ef;
+			} else {
+				timeState = MORNING_STATE;
+				return R.drawable.morning2ef;
+			}
+		}
 
-        public Bitmap getBackground(Resources resources) {
-            DisplayMetrics metrics = resources.getDisplayMetrics();
+		public Bitmap getBackground(Resources resources) {
+			DisplayMetrics metrics = resources.getDisplayMetrics();
 
-            int currentWidth = metrics.widthPixels;
-			float currentHeightF = (float) (1.2*metrics.heightPixels);
+			int currentWidth = metrics.widthPixels;
+			float currentHeightF = (float) (1.2 * metrics.heightPixels);
 			int currentHeight = (int) currentHeightF;
 			int currentHour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY);
 
+			Date curdate = Calendar.getInstance().getTime();
+			Date effeDate = new Date(116, 9, 15);
+
+			long diff = effeDate.getTime() - curdate.getTime();
+			long newDaysLeft = TimeUnit.DAYS.convert(diff, TimeUnit.MILLISECONDS);
 
 			//Log.d("curHeight", String.valueOf(currentHeight));
 
-            if (lastHour != currentHour) {
-                int id = getBackgroundForHour(currentHour);
-                lastBackground = BitmapFactory.decodeResource(resources, id);
-            }
+			if (lastHour != currentHour || daysLeft != newDaysLeft) {
+				int id = getBackgroundForHour(currentHour);
+				lastBackground = BitmapFactory.decodeResource(resources, id);
+			}
 
-            if (lastHour != currentHour
-                    || lastWidth != currentWidth
-                    || lastHeight != currentHeight) {
+			if (lastHour != currentHour
+				|| lastWidth != currentWidth
+				|| lastHeight != currentHeight
+				|| daysLeft != newDaysLeft
+				) {
 
-                lastBackgroundScaled = createBitmapFillDisplay(
-                        lastBackground,
-                        currentWidth,
-                        currentHeight
-                );
+				lastBackgroundScaled = createBitmapFillDisplay(
+					lastBackground,
+					currentWidth,
+					currentHeight
+				);
 
-                lastHour = currentHour;
-                lastWidth = currentWidth;
-                lastHeight = currentHeight;
-            }
+				lastHour = currentHour;
+				lastWidth = currentWidth;
+				lastHeight = currentHeight;
+				daysLeft = newDaysLeft;
+			}
 
-            return lastBackgroundScaled;
-        }
+			return lastBackgroundScaled;
+		}
 
-        private Bitmap createBitmapFillDisplay(Bitmap bitmap, float displayWidth, float displayHeight) {
+		private Bitmap createBitmapFillDisplay(Bitmap bitmap, float displayWidth, float displayHeight) {
 
-            float
-                    bitmapWidth = bitmap.getWidth(),
-                    bitmapHeight = bitmap.getHeight(),
-                    xScale = displayWidth / bitmapWidth,
-                    yScale = displayHeight / bitmapHeight,
-                    scale = Math.max(xScale, yScale),
-                    scaledWidth = scale * bitmapWidth,
-                    scaledHeight = scale * bitmapHeight;
+			float
+				bitmapWidth = bitmap.getWidth(),
+				bitmapHeight = bitmap.getHeight(),
+				xScale = displayWidth / bitmapWidth,
+				yScale = displayHeight / bitmapHeight,
+				scale = Math.max(xScale, yScale),
+				scaledWidth = scale * bitmapWidth,
+				scaledHeight = scale * bitmapHeight;
 
-            Bitmap scaledImage = Bitmap.createBitmap((int) scaledWidth, (int) scaledHeight, Bitmap.Config.ARGB_8888);
+			Bitmap scaledImage = Bitmap.createBitmap((int) scaledWidth, (int) scaledHeight, Bitmap.Config.ARGB_8888);
 
-            Canvas canvas = new Canvas(scaledImage);
+			Canvas canvas = new Canvas(scaledImage);
 
-            Matrix transformation = new Matrix();
-            transformation.preScale(scale, scale);
+			Matrix transformation = new Matrix();
+			transformation.preScale(scale, scale);
 
-            Paint paint = new Paint();
-            paint.setFilterBitmap(true);
+			Paint paint = new Paint();
+			paint.setFilterBitmap(true);
 
 			Date curdate = Calendar.getInstance().getTime();
-			Date effeDate = new Date(116,9,15);
-			Log.d("tem ke h bhai", "" + curdate.toString());
-			Log.d("effe kab h",effeDate.toString());
-			long diff = effeDate.getTime() - curdate.getTime();
-			long newDaysLeft = TimeUnit.DAYS.convert(diff,TimeUnit.MILLISECONDS);
+			Date effeDate = new Date(116, 9, 15);
 
-			Bitmap bitmap1 = drawTextToBitmap(getApplicationContext(), bitmap,  newDaysLeft+" days to go", getColor(R.color.md_white_1000), 12, 12, 45);
+			long diff = effeDate.getTime() - curdate.getTime();
+			long newDaysLeft = TimeUnit.DAYS.convert(diff, TimeUnit.MILLISECONDS);
+
+			String bannerMessage = newDaysLeft + " days to go";
+
+			if(newDaysLeft < 0 && newDaysLeft>-3){
+				bannerMessage = "Enjoy the Carnival";
+			}
+			else if(newDaysLeft <= -3){
+				bannerMessage = "Stay tuned for next year";
+			}
+
+
+
+			Bitmap bitmap1;
+			if (timeState == NIGHT_STATE) {
+				bitmap1 = drawTextToBitmap(getApplicationContext(), bitmap,
+					bannerMessage, getColor(R.color.md_purple_900),
+					0.31f, 0.36f, -11, 150);
+			}
+			else if(timeState == EVENING_STATE){
+				bitmap1 = drawTextToBitmap(getApplicationContext(), bitmap,
+					bannerMessage, getColor(R.color.md_brown_800),
+					0.31f, 0.35f, -11, 150);
+			}
+			else {
+				bitmap1 = drawTextToBitmap(getApplicationContext(), bitmap,
+					bannerMessage, getColor(R.color.md_yellow_50),
+					0.5f, 0.25f, 0, 120);
+			}
 			canvas.drawBitmap(bitmap1, transformation, paint);
 
-            return scaledImage;
-        }
+			return scaledImage;
+		}
 
-		public Bitmap drawTextToBitmap(Context gContext, Bitmap bitmap, String gText , int color, int corX, int corY, int angle) {
+		public Bitmap drawTextToBitmap(Context gContext, Bitmap bitmap, String gText, int color, float corX, float corY, int angle, int textSizeScale) {
 			Resources resources = gContext.getResources();
 			float scale = resources.getDisplayMetrics().density;
 
 			android.graphics.Bitmap.Config bitmapConfig =
 				bitmap.getConfig();
 			// set default bitmap config if none
-			if(bitmapConfig == null) {
-				bitmapConfig = android.graphics.Bitmap.Config.ARGB_8888;
+			if (bitmapConfig == null) {
+				bitmapConfig = android.graphics.Bitmap.Config.RGB_565;
 			}
 			// resource bitmaps are imutable,
 			// so we need to convert it to mutable one
 			bitmap = bitmap.copy(bitmapConfig, true);
 
 			Canvas canvas = new Canvas(bitmap);
-			// new antialised Paint
+
 			Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
-			// text color - #3D3D3D
 			paint.setColor(color);
-			// text size in pixels
-			paint.setTextSize((int) (120 * scale));
+			paint.setTextSize((int) (textSizeScale * scale));
+			Typeface tf = Typeface.createFromAsset(getAssets(), "fonts/quigleywiggly.ttf");
+			paint.setTypeface(tf);
 
 			// draw text to the Canvas center
 			Rect bounds = new Rect();
 			paint.getTextBounds(gText, 0, gText.length(), bounds);
-			int x = (bitmap.getWidth() - bounds.width())/2;
-			int y = (bitmap.getHeight() + bounds.height())/4;
 
+			int x = (int) ((bitmap.getWidth() - bounds.width()) * corX);
+			int y = (int) ((bitmap.getHeight() + bounds.height()) * corY);
+
+			Log.d("Angle", String.valueOf(angle));
+
+			canvas.save();
+			canvas.rotate(angle);
 			canvas.drawText(gText, x, y, paint);
+			canvas.restore();
 
 			return bitmap;
 		}
-    }
-
-
+	}
 }

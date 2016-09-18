@@ -112,6 +112,7 @@ public class LiveWallpaperService extends WallpaperService {
 			draw();
 		}
 
+
 		private void killResources() {
 			handler.removeCallbacks(drawRunner);
 			if (receiver != null) {
@@ -186,7 +187,11 @@ public class LiveWallpaperService extends WallpaperService {
 
 			if (lastHour != currentHour || daysLeft != newDaysLeft) {
 				int id = getBackgroundForHour(currentHour);
-				lastBackground = BitmapFactory.decodeResource(resources, id);
+				BitmapFactory.Options options = new BitmapFactory.Options();
+				//options.inJustDecodeBounds = true;
+				//options.inSampleSize = 2;
+				options.inTempStorage = new byte[16*1024];
+				lastBackground = BitmapFactory.decodeResource(resources, id,options);
 			}
 
 			if (lastHour != currentHour
@@ -215,13 +220,13 @@ public class LiveWallpaperService extends WallpaperService {
 			float
 				bitmapWidth = bitmap.getWidth(),
 				bitmapHeight = bitmap.getHeight(),
-				xScale = displayWidth / bitmapWidth,
+				xScale = displayWidth / bitmapWidth ,
 				yScale = displayHeight / bitmapHeight,
 				scale = Math.max(xScale, yScale),
 				scaledWidth = scale * bitmapWidth,
 				scaledHeight = scale * bitmapHeight;
 
-			Bitmap scaledImage = Bitmap.createBitmap((int) scaledWidth, (int) scaledHeight, Bitmap.Config.ARGB_8888);
+			Bitmap scaledImage = Bitmap.createBitmap((int) scaledWidth, (int) scaledHeight, Bitmap.Config.RGB_565);
 
 			Canvas canvas = new Canvas(scaledImage);
 
@@ -247,43 +252,31 @@ public class LiveWallpaperService extends WallpaperService {
 			}
 
 
+			canvas.drawBitmap(bitmap, transformation, paint);
 
-			Bitmap bitmap1;
 			if (timeState == NIGHT_STATE) {
-				bitmap1 = drawTextToBitmap(getApplicationContext(), bitmap,
+				drawTextToBitmap(getApplicationContext(), scaledImage, canvas,
 					bannerMessage, getColor(R.color.md_purple_900),
 					0.31f, 0.36f, -11, 150);
 			}
 			else if(timeState == EVENING_STATE){
-				bitmap1 = drawTextToBitmap(getApplicationContext(), bitmap,
+				drawTextToBitmap(getApplicationContext(), scaledImage, canvas,
 					bannerMessage, getColor(R.color.md_brown_800),
 					0.31f, 0.35f, -11, 150);
 			}
 			else {
-				bitmap1 = drawTextToBitmap(getApplicationContext(), bitmap,
+				drawTextToBitmap(getApplicationContext(), scaledImage, canvas,
 					bannerMessage, getColor(R.color.md_yellow_50),
-					0.5f, 0.25f, 0, 120);
+					0.5f, 0.25f, 0, 60);
 			}
-			canvas.drawBitmap(bitmap1, transformation, paint);
 
 			return scaledImage;
 		}
 
-		public Bitmap drawTextToBitmap(Context gContext, Bitmap bitmap, String gText, int color, float corX, float corY, int angle, int textSizeScale) {
+		public void drawTextToBitmap(Context gContext, Bitmap bitmap, Canvas canvas, String gText, int color, float corX, float corY, int angle, int textSizeScale) {
+
 			Resources resources = gContext.getResources();
 			float scale = resources.getDisplayMetrics().density;
-
-			android.graphics.Bitmap.Config bitmapConfig =
-				bitmap.getConfig();
-			// set default bitmap config if none
-			if (bitmapConfig == null) {
-				bitmapConfig = android.graphics.Bitmap.Config.RGB_565;
-			}
-			// resource bitmaps are imutable,
-			// so we need to convert it to mutable one
-			bitmap = bitmap.copy(bitmapConfig, true);
-
-			Canvas canvas = new Canvas(bitmap);
 
 			Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
 			paint.setColor(color);
@@ -305,7 +298,6 @@ public class LiveWallpaperService extends WallpaperService {
 			canvas.drawText(gText, x, y, paint);
 			canvas.restore();
 
-			return bitmap;
 		}
 	}
 }

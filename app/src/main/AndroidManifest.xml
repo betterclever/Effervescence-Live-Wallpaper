@@ -18,6 +18,19 @@
             <meta-data android:resource="@xml/clever_wallpaper" android:name="android.service.wallpaper"/>
         </service>
 
+        <receiver android:name="com.betterclever.effervescencelivewp.ClockWidgetProvider" android:exported="true" >
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data android:name="android.appwidget.provider"
+                       android:resource="@xml/clock_widget" />
+        </receiver>
+        <service android:name=".ClockWidgetProvider$ClockUpdateService" android:exported="true">
+            <intent-filter>
+                <action android:name="com.betterclever.effervescencelwp.clockwidget.UPDATE" />
+            </intent-filter>
+        </service>
+
     </application>
 
 </manifest>

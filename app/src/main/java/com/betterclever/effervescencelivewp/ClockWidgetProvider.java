@@ -84,7 +84,7 @@ public class ClockWidgetProvider extends AppWidgetProvider {
 			context,
 			dateFormatter.format(date),
 			Color.WHITE,
-			24));
+			36));
 		DateFormat timeFormatter = DateFormat.getTimeInstance(DateFormat.SHORT, Locale.getDefault());
 		//remoteViews.setTextViewText(R.id.textViewTime, timeFormatter.format(date));
 		remoteViews.setImageViewBitmap(R.id.imageViewTime, getFontBitmap(
@@ -119,7 +119,7 @@ public class ClockWidgetProvider extends AppWidgetProvider {
 		Bitmap bitmap = Bitmap.createBitmap(textWidth, height, Bitmap.Config.ARGB_4444);
 		Canvas canvas = new Canvas(bitmap);
 
-		canvas.drawPaint(paint1);
+		//canvas.drawPaint(paint1);
 		canvas.drawText(text, pad, fontSizePX, paint);
 		return bitmap;
 	}

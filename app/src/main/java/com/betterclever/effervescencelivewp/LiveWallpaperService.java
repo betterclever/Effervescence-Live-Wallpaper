@@ -15,6 +15,7 @@ import android.graphics.Rect;
 import android.graphics.Typeface;
 import android.os.Handler;
 import android.service.wallpaper.WallpaperService;
+import android.support.v4.content.ContextCompat;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.SurfaceHolder;
@@ -256,17 +257,17 @@ public class LiveWallpaperService extends WallpaperService {
 
 			if (timeState == NIGHT_STATE) {
 				drawTextToBitmap(getApplicationContext(), scaledImage, canvas,
-					bannerMessage, getColor(R.color.md_purple_900),
-					0.31f, 0.36f, -11, 80);
+					bannerMessage, ContextCompat.getColor(getApplicationContext(),R.color.md_purple_900),
+					0.31f, 0.36f, -11, 70);
 			}
 			else if(timeState == EVENING_STATE){
 				drawTextToBitmap(getApplicationContext(), scaledImage, canvas,
-					bannerMessage, getColor(R.color.md_brown_800),
-					0.31f, 0.35f, -11, 80);
+					bannerMessage, ContextCompat.getColor(getApplicationContext(),R.color.md_brown_800),
+					0.31f, 0.35f, -11, 70);
 			}
 			else {
 				drawTextToBitmap(getApplicationContext(), scaledImage, canvas,
-					bannerMessage, getColor(R.color.md_yellow_50),
+					bannerMessage, ContextCompat.getColor(getApplicationContext(),R.color.md_yellow_100),
 					0.5f, 0.25f, 0, 60);
 			}
 
@@ -281,7 +282,7 @@ public class LiveWallpaperService extends WallpaperService {
 			Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
 			paint.setColor(color);
 			paint.setTextSize((int) (textSizeScale * scale));
-			Typeface tf = Typeface.createFromAsset(getAssets(), "fonts/quigleywiggly.ttf");
+			Typeface tf = Typeface.createFromAsset(getAssets(), "fonts/reclame.otf");
 			paint.setTypeface(tf);
 
 			// draw text to the Canvas center

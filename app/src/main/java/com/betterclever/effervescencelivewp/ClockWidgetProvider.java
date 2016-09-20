@@ -13,7 +13,9 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Typeface;
+import android.os.Bundle;
 import android.os.IBinder;
+import android.util.Log;
 import android.util.TypedValue;
 import android.widget.RemoteViews;
 
@@ -95,6 +97,8 @@ public class ClockWidgetProvider extends AppWidgetProvider {
 	}
 
 	private static Bitmap getFontBitmap(Context context, String text, int color, float fontSizeSP) {
+
+
 		int fontSizePX = convertDiptoPix(context, fontSizeSP);
 		int pad = (fontSizePX / 9);
 		Paint paint = new Paint();
@@ -105,10 +109,17 @@ public class ClockWidgetProvider extends AppWidgetProvider {
 		paint.setTextSize(fontSizePX);
 		paint.setShadowLayer(2, 1, 1, Color.DKGRAY);
 
+		Paint paint1 = new Paint();
+		paint1.setColor(Color.parseColor("#F4511E"));
+		paint1.setAntiAlias(true);
+		paint1.setAlpha(128);
+
 		int textWidth = (int) (paint.measureText(text) + pad * 2);
 		int height = (int) (fontSizePX / 0.75);
 		Bitmap bitmap = Bitmap.createBitmap(textWidth, height, Bitmap.Config.ARGB_4444);
 		Canvas canvas = new Canvas(bitmap);
+
+		canvas.drawPaint(paint1);
 		canvas.drawText(text, pad, fontSizePX, paint);
 		return bitmap;
 	}
@@ -132,12 +143,19 @@ public class ClockWidgetProvider extends AppWidgetProvider {
 	@Override
 	public void onEnabled(Context context) {
 		super.onEnabled(context);
+		updateTime(context);
 		context.startService(new Intent(context, ClockUpdateService.class));
+	}
+
+	@Override
+	public void onAppWidgetOptionsChanged(Context context, AppWidgetManager appWidgetManager, int appWidgetId, Bundle newOptions){
+		updateTime(context);
 	}
 
 	@Override
 	public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
 		super.onUpdate(context, appWidgetManager, appWidgetIds);
+		updateTime(context);
 		context.startService(new Intent(context, ClockUpdateService.class));
 	}
 }

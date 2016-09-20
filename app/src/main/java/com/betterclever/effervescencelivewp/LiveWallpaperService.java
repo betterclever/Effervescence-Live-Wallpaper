@@ -24,7 +24,7 @@ import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Created by better_clever on 14/9/16. Powered by AppIC
+ * Created by better_clever on 14/9/16.
  */
 public class LiveWallpaperService extends WallpaperService {
 	@Override
@@ -257,12 +257,12 @@ public class LiveWallpaperService extends WallpaperService {
 			if (timeState == NIGHT_STATE) {
 				drawTextToBitmap(getApplicationContext(), scaledImage, canvas,
 					bannerMessage, getColor(R.color.md_purple_900),
-					0.31f, 0.36f, -11, 150);
+					0.31f, 0.36f, -11, 80);
 			}
 			else if(timeState == EVENING_STATE){
 				drawTextToBitmap(getApplicationContext(), scaledImage, canvas,
 					bannerMessage, getColor(R.color.md_brown_800),
-					0.31f, 0.35f, -11, 150);
+					0.31f, 0.35f, -11, 80);
 			}
 			else {
 				drawTextToBitmap(getApplicationContext(), scaledImage, canvas,

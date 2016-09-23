@@ -2,9 +2,9 @@
 
 <appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
                     android:updatePeriodMillis="0"
-                    android:previewImage="@mipmap/effeicon"
-                    android:minWidth="180dip"
-                    android:minHeight="76dip"
+                    android:previewImage="@drawable/preview"
+                    android:minWidth="176dip"
+                    android:minHeight="140dip"
                     android:resizeMode="vertical|horizontal"
                     android:widgetCategory="home_screen"
                     android:initialLayout="@layout/clock_widget_layout"
